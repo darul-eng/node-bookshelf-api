@@ -5,12 +5,12 @@ const addBookHandler = (request, h) => {
     const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
 
     const  id = nanoid(16);
-    let finished = false;
-    const insertAt = new Date().toISOString();
-    const updatedAt = insertAt;
+    let finished = pageCount === readPage;
+    const insertedAt = new Date().toISOString();
+    const updatedAt = insertedAt;
 
  //bila nama kosong
-    if (name == undefined || name === ''){
+    if (name === undefined){
         const response = h.response({
             status: 'fail',
             message: 'Gagal menambahkan buku. Mohon isi nama buku',
@@ -29,13 +29,8 @@ const addBookHandler = (request, h) => {
         return response;
     }
 
- //jika readpage===pageCount
-    if (readPage === pageCount){
-          finished = true;
-    }
-
     const newBook = {
-        id, name, year,author,summary,publisher,pageCount,readPage,reading,finished,insertAt,updatedAt
+        id, name, year,author,summary,publisher,pageCount,readPage,reading,finished,insertedAt,updatedAt
     };
 
     books.push(newBook);
@@ -66,7 +61,11 @@ const addBookHandler = (request, h) => {
 const getAllBooksHandler = () => ({
     status: 'success',
     data: {
-        books,
+        books: books.map((book) => ({
+            'id': book.id,
+            'name': book.name,
+            'publisher': book.publisher
+        })),
     },
 });
 
@@ -80,7 +79,7 @@ const getBookByIdHandler = (request, h) => {
         return {
             status: 'success',
             data: {
-                book,
+                book
             },
         };
     }
@@ -99,15 +98,12 @@ const editBookByIdHandler = (request, h) => {
 
     const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
     const updatedAt = new Date().toISOString();
-    let finished = false;
-    if (pageCount === readPage){
-        finished = true;
-    }
+    const finished = pageCount === readPage;
 //bila nama kosong
-    if (name == undefined || name === ''){
+    if (name === undefined){
         const response = h.response({
             status: 'fail',
-            message: 'Gagal menambahkan buku. Mohon isi nama buku',
+            message: 'Gagal memperbarui buku. Mohon isi nama buku',
         });
         response.code(400);
         return response;
@@ -116,7 +112,7 @@ const editBookByIdHandler = (request, h) => {
     if ( readPage > pageCount) {
         const response = h.response({
             status: 'fail',
-            message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount'
+            message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount'
         });
         response.code(400);
         return response;
